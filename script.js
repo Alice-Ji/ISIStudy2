@@ -72,13 +72,14 @@ function setupVideoAutoplay() {
     video.addEventListener("pause", () => {
       if (playOverlay) playOverlay.classList.remove("hidden");
     });
+    
+    // record if video ends
+    video.addEventListener("ended", () => {
+    console.log("🎬 Video ended, notifying Qualtrics...");
+    const qualtricsURL = "https://illinois.qualtrics.com";
+    window.parent.postMessage({ videoEnded: true }, qualtricsURL);
+    });
   });
-  // record if video ends
-  video.addEventListener("ended", () => {
-  console.log("🎬 Video ended, notifying Qualtrics...");
-  const qualtricsURL = "https://illinois.qualtrics.com";
-  window.parent.postMessage({ videoEnded: true }, qualtricsURL);
-});
 }
 
 // randomize post order
