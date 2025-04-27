@@ -19,47 +19,46 @@ const posts = [
 
 //setupVideoAutoplay
 function setupVideoAutoplay() {
-  // make video play sound
-  let userHasInteracted = false; // Track if the user has scrolled
+  let userHasInteracted = false;
 
   document.addEventListener("scroll", () => {
     if (!userHasInteracted) {
       document.querySelectorAll(".video-post").forEach((video) => {
-        video.muted = false; // 🔊 Unmute all videos once scrolling starts
+        video.muted = false;
       });
-      userHasInteracted = true; // Prevent further changes
+      userHasInteracted = true;
+      enableEndedListeners(); // 💥 Only after scroll, enable ended listeners
     }
-  }); // make video play sound
+  });
+
   const videos = document.querySelectorAll(".video-post");
 
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target
-            .play()
-            .catch((error) => console.warn("Autoplay prevented:", error));
+          entry.target.play().catch((error) => console.warn("Autoplay prevented:", error));
         } else {
           entry.target.pause();
         }
       });
     },
-    { threshold: 0.9 } // ✅ Only autoplay when 90% visible
+    { threshold: 0.9 }
   );
 
   videos.forEach((video) => {
     observer.observe(video);
 
     const playOverlay = video.parentElement.querySelector(".play-overlay");
-    if (playOverlay) playOverlay.classList.remove("hidden"); // ✅ Show play button initially
+    if (playOverlay) playOverlay.classList.remove("hidden");
 
     video.addEventListener("click", () => {
       if (video.paused) {
         video.play();
-        if (playOverlay) playOverlay.classList.add("hidden"); // ✅ Hide when playing
+        if (playOverlay) playOverlay.classList.add("hidden");
       } else {
         video.pause();
-        if (playOverlay) playOverlay.classList.remove("hidden"); // ✅ Show when paused
+        if (playOverlay) playOverlay.classList.remove("hidden");
       }
     });
 
@@ -72,15 +71,23 @@ function setupVideoAutoplay() {
     video.addEventListener("pause", () => {
       if (playOverlay) playOverlay.classList.remove("hidden");
     });
-    
-    // record if video ends
+
+    // 🚫 DO NOT attach 'ended' yet
+  });
+}
+
+// ✅ New helper function
+function enableEndedListeners() {
+  const videos = document.querySelectorAll(".video-post");
+  videos.forEach((video) => {
     video.addEventListener("ended", () => {
-    console.log("🎬 Video ended, notifying Qualtrics...");
-    const qualtricsURL = "https://illinois.qualtrics.com";
-    window.parent.postMessage({ videoEnded: true }, qualtricsURL);
+      console.log("🎬 Video ended, notifying Qualtrics...");
+      const qualtricsURL = "https://illinois.qualtrics.com";
+      window.parent.postMessage({ videoEnded: true }, qualtricsURL);
     });
   });
 }
+
 
 // randomize post order
 function shufflePosts() {
