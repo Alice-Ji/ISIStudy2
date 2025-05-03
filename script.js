@@ -6,14 +6,14 @@ const posts = [
     type: "video",
     username: "Auvelity® dextromethorphan HBr and bupropion HCl",
     media: [
-      "https://github.com/Alice-Ji/ISIStudy2/blob/main/depression-auvelity-man.mp4?raw=true",
+      "https://raw.githubusercontent.com/Alice-Ji/ISIStudy2/main/depression-auvelity-man.mp4",
     ],
     caption: "Sponsored Content",
     likes: 0,
     liked: false,
     comments: [],
     profilePic:
-      "https://github.com/Alice-Ji/ISIStudy2/blob/main/auvelity_avatar.jpg?raw=true",
+      "https://raw.githubusercontent.com/Alice-Ji/ISIStudy2/main/auvelity_avatar.jpg",
   },
 ];
 
@@ -151,15 +151,15 @@ function renderFeed() {
       ${mediaContent}
       <p>${post.caption}</p>
       <div class="post-actions">
-          <img id="like-btn-${index}" src="https://github.com/ruochongji/affordancePSIPSR/blob/main/ins-like1.png?raw=true" 
+          <img id="like-btn-${index}" src="https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-like1.png" 
                alt="Like" class="action-icon" onclick="window.likePost(${index})">
-          <img id="comment-btn-${index}" src="https://github.com/ruochongji/affordancePSIPSR/blob/main/ins-comment.png?raw=true"
+          <img id="comment-btn-${index}" src="https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-comment.png"
                alt="Comment" class="action-icon" onclick="window.toggleComment(${index})">
       </div>
       <div id="comment-section-${index}" class="comment-section hidden">
           <div class="comment-input-container">
               <input type="text" id="comment-input-${index}" placeholder="Add a comment...">
-              <img id="send-comment-${index}" src="https://github.com/ruochongji/affordancePSIPSR/blob/main/ins-sendcomment.png?raw=true" 
+              <img id="send-comment-${index}" src="https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-sendcomment.png" 
                    alt="Send" class="send-icon" onclick="window.addComment(${index})">
           </div>
           <ul id="comments-${index}"></ul>
@@ -238,12 +238,12 @@ window.likePost = function (index) {
     posts[index].likes++;
     posts[index].liked = true;
     likeBtn.src =
-      "https://github.com/ruochongji/affordancePSIPSR/blob/main/ins-like2.png?raw=true";
+      "https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-like2.png";
   } else {
     posts[index].likes--;
     posts[index].liked = false;
     likeBtn.src =
-      "https://github.com/ruochongji/affordancePSIPSR/blob/main/ins-like1.png?raw=true";
+      "https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-like1.png";
   }
 };
 
