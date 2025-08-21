@@ -177,6 +177,15 @@ window.likePost = function (index) {
   window.parent.postMessage({ qel_like: posts[index].likes }, qualtricsURL);
 };
 
+// ✅ Toggle comment section
+window.toggleComment = function (index) {
+  const commentSection = document.getElementById(`comment-section-${index}`);
+  if (commentSection) {
+    commentSection.classList.toggle("hidden");
+  }
+};
+
+
 // ✅ Add comment
 window.addComment = function (index) {
   const input = document.getElementById(`comment-input-${index}`);
