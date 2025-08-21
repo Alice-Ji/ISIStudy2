@@ -172,8 +172,11 @@ function renderFeed() {
       ${mediaContent}
       <p>${post.caption}</p>
       <div class="post-actions">
-          <img id="like-btn-${index}" src="https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-like1.png" 
-               alt="Like" class="action-icon" onclick="window.likePost(${index})">
+          <img id="like-btn-${index}" 
+     src="${post.liked 
+       ? "https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-like2.png" 
+       : "https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-like1.png"}" 
+     alt="Like" class="action-icon" onclick="window.likePost(${index})">
           <img id="comment-btn-${index}" src="https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-comment.png"
                alt="Comment" class="action-icon" onclick="window.toggleComment(${index})">
       </div>
