@@ -60,7 +60,6 @@ function setupVideoAutoplay() {
         video.muted = false;
       });
       userHasInteracted = true;
-      enableEndedListeners();
     }
   });
 
@@ -105,6 +104,9 @@ function setupVideoAutoplay() {
       if (playOverlay) playOverlay.classList.remove("hidden");
     });
   });
+
+  // ✅ Attach immediately so first play works
+  enableEndedListeners();
 }
 
 // ✅ Notify Qualtrics when video ends
