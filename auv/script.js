@@ -1,7 +1,30 @@
 console.log("🚀 AUV script.js has loaded successfully!");
 
+// -----------------------------
+// State persistence
+// -----------------------------
+function saveState() {
+  localStorage.setItem("auv_state", JSON.stringify({
+    posts,
+    collectedComments,
+    shopNowClicks
+  }));
+}
+
+function loadState() {
+  const saved = localStorage.getItem("auv_state");
+  if (saved) {
+    const state = JSON.parse(saved);
+    if (state.posts) posts = state.posts;
+    if (state.collectedComments) collectedComments = state.collectedComments;
+    if (state.shopNowClicks) shopNowClicks = state.shopNowClicks;
+  }
+}
+
+// -----------------------------
 // Post data
-const posts = [
+// -----------------------------
+let posts = [
   {
     type: "video",
     username: "Auvelity® dextromethorphan HBr and bupropion HCl",
@@ -22,7 +45,12 @@ let collectedComments = [];
 let shopNowClicks = [];
 const qualtricsURL = "https://illinois.qualtrics.com";
 
-//setupVideoAutoplay
+// Load saved state if it exists
+loadState();
+
+// -----------------------------
+// Video autoplay
+// -----------------------------
 function setupVideoAutoplay() {
   let userHasInteracted = false;
 
@@ -90,7 +118,9 @@ function enableEndedListeners() {
   });
 }
 
-// randomize post order
+// -----------------------------
+// Shuffle + render feed
+// -----------------------------
 function shufflePosts() {
   for (let i = posts.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -98,7 +128,6 @@ function shufflePosts() {
   }
 }
 
-// Render feed
 function renderFeed() {
   shufflePosts();
 
@@ -123,6 +152,7 @@ function renderFeed() {
   </div>`;
     }
 
+    // ✅ Only show Learn More button for Auvelity
     if (
       post.username.includes("Auvelity") && 
       post.media[0].includes("auvelity")
@@ -164,7 +194,9 @@ function renderFeed() {
   setupVideoAutoplay();
 }
 
-// ✅ Like post
+// -----------------------------
+// Like / Comment / Click tracking
+// -----------------------------
 window.likePost = function (index) {
   let likeBtn = document.getElementById(`like-btn-${index}`);
   if (!posts[index].liked) {
@@ -179,6 +211,7 @@ window.likePost = function (index) {
 
   console.log("❤️ Sending AUV like count:", posts[index].likes);
   window.parent.postMessage({ auv_like: posts[index].likes }, qualtricsURL);
+  saveState();
 };
 
 // ✅ Toggle comment section
@@ -188,7 +221,6 @@ window.toggleComment = function (index) {
     commentSection.classList.toggle("hidden");
   }
 };
-
 
 // ✅ Add comment
 window.addComment = function (index) {
@@ -202,6 +234,7 @@ window.addComment = function (index) {
 
     console.log("✅ AUV addComment():", comment);
     sendCommentsToQualtrics();
+    saveState();
   }
 };
 
@@ -251,9 +284,12 @@ window.trackShopNowClick = function (username) {
   window.parent.postMessage({ auv_click: shopNowClicks.join(" | ") }, qualtricsURL);
 
   showPopup();
+  saveState();
 };
 
+// -----------------------------
 // Popup
+// -----------------------------
 function showPopup() {
   const popup = document.getElementById("popup-modal");
   if (popup) popup.classList.remove("hidden");
@@ -267,5 +303,7 @@ function hidePopup() {
 window.showPopup = showPopup;
 window.hidePopup = hidePopup;
 
-// Load feed
+// -----------------------------
+// Init
+// -----------------------------
 renderFeed();
