@@ -1,7 +1,30 @@
 console.log("🚀 qel/script.js has loaded successfully!");
 
+// -----------------------------
+// State persistence
+// -----------------------------
+function saveState() {
+  localStorage.setItem("qel_state", JSON.stringify({
+    posts,
+    collectedComments,
+    shopNowClicks
+  }));
+}
+
+function loadState() {
+  const saved = localStorage.getItem("qel_state");
+  if (saved) {
+    const state = JSON.parse(saved);
+    if (state.posts) posts = state.posts;
+    if (state.collectedComments) collectedComments = state.collectedComments;
+    if (state.shopNowClicks) shopNowClicks = state.shopNowClicks;
+  }
+}
+
+// -----------------------------
 // Post data
-const posts = [
+// -----------------------------
+let posts = [
   {
     type: "video",
     username: "Auvelity® dextromethorphan HBr and bupropion HCl",
@@ -20,6 +43,9 @@ const posts = [
 // Global arrays
 let collectedComments = [];
 let shopNowClicks = [];
+
+// Load any saved state
+loadState();
 
 // -----------------------------
 // Video autoplay
@@ -125,7 +151,6 @@ function renderFeed() {
       `;
     }
 
-    // ✅ Always include Learn More button
     mediaContent += `
       <button class="shop-now-btn" onclick="window.trackShopNowClick('${post.username}')">
         Learn More
@@ -166,40 +191,6 @@ function renderFeed() {
 }
 
 // -----------------------------
-// Carousel functions (if needed)
-// -----------------------------
-window.nextImage = function (index) {
-  if (posts[index].type === "carousel") {
-    if (posts[index].currentIndex < posts[index].media.length - 1) {
-      posts[index].currentIndex++;
-      updateCarousel(index);
-    }
-  }
-};
-
-window.prevImage = function (index) {
-  if (posts[index].type === "carousel") {
-    if (posts[index].currentIndex > 0) {
-      posts[index].currentIndex--;
-      updateCarousel(index);
-    }
-  }
-};
-
-function updateCarousel(index) {
-  let post = posts[index];
-  let imageElement = document.getElementById(`carousel-${index}`);
-  let indicatorElement = document.getElementById(`indicator-${index}`);
-
-  if (imageElement) {
-    imageElement.src = post.media[post.currentIndex];
-  }
-  if (indicatorElement) {
-    indicatorElement.textContent = `${post.currentIndex + 1} / ${post.media.length}`;
-  }
-}
-
-// -----------------------------
 // Like / Comment / Click tracking
 // -----------------------------
 window.likePost = function (index) {
@@ -216,6 +207,7 @@ window.likePost = function (index) {
 
   console.log("❤️ Sending QEL like count:", posts[index].likes);
   window.parent.postMessage({ qel_like: posts[index].likes }, "https://illinois.qualtrics.com");
+  saveState();
 };
 
 window.addComment = function (index) {
@@ -229,6 +221,7 @@ window.addComment = function (index) {
 
     console.log("💬 QEL comment:", comment);
     sendCommentsToQualtrics();
+    saveState();
   }
 };
 
@@ -278,6 +271,7 @@ window.trackShopNowClick = function (username) {
   window.parent.postMessage({ qel_click: shopNowClicks.join(" | ") }, "https://illinois.qualtrics.com");
 
   showPopup();
+  saveState();
 };
 
 // -----------------------------
