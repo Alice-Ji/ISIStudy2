@@ -17,6 +17,10 @@ const posts = [
   },
 ];
 
+// Global arrays
+let collectedComments = [];
+let shopNowClicks = [];
+
 //setupVideoAutoplay
 function setupVideoAutoplay() {
   let userHasInteracted = false;
@@ -88,7 +92,6 @@ function enableEndedListeners() {
   });
 }
 
-
 // randomize post order
 function shufflePosts() {
   for (let i = posts.length - 1; i > 0; i--) {
@@ -118,7 +121,7 @@ function renderFeed() {
           <source src="${post.media[0]}" type="video/mp4">
           Your browser does not support the video tag.
       </video>
-      <div class="play-overlay hidden"></div> <!-- ✅ This is the only play button now -->
+      <div class="play-overlay hidden"></div>
   </div>
       `;
     } else if (post.type === "carousel") {
@@ -131,10 +134,11 @@ function renderFeed() {
         </div>
       `;
     }
+
     // ✅ Add "Learn More" button + record clicks
     if (
-      post.username.includes("Auvelity") && // filter username
-      post.media[0].includes("auvelity") //filter post media file name
+      post.username.includes("Auvelity") && 
+      post.media[0].includes("auvelity")
     ) {
       mediaContent += `
           <button class="shop-now-btn" onclick="window.trackShopNowClick('${post.username}')">
@@ -170,68 +174,42 @@ function renderFeed() {
     updateComments(index);
   });
 
-  setupVideoAutoplay(); // ✅ Ensure observer is set up after rendering
+  setupVideoAutoplay();
 }
 
-// Function to switch to the next image in the carousel
+// Carousel functions
 window.nextImage = function (index) {
   if (posts[index].type === "carousel") {
     if (posts[index].currentIndex < posts[index].media.length - 1) {
       posts[index].currentIndex++;
-      console.log(
-        `➡️ Next Image: Now showing ${posts[index].currentIndex + 1} / ${
-          posts[index].media.length
-        }`
-      );
       updateCarousel(index);
     }
   }
 };
 
-// Function to switch to the previous image in the carousel
 window.prevImage = function (index) {
   if (posts[index].type === "carousel") {
     if (posts[index].currentIndex > 0) {
       posts[index].currentIndex--;
-      console.log(
-        `⬅️ Previous Image: Now showing ${posts[index].currentIndex + 1} / ${
-          posts[index].media.length
-        }`
-      );
       updateCarousel(index);
     }
   }
 };
 
-// Function to update the carousel display, including the indicator
 function updateCarousel(index) {
   let post = posts[index];
-
-  console.log(
-    `🔄 Updating carousel ${index}: Now at ${post.currentIndex + 1} / ${
-      post.media.length
-    }`
-  );
-
   let imageElement = document.getElementById(`carousel-${index}`);
   let indicatorElement = document.getElementById(`indicator-${index}`);
 
   if (imageElement) {
-    imageElement.src = post.media[post.currentIndex]; // Update the image
-  } else {
-    console.warn(`❌ Image element "carousel-${index}" not found.`);
+    imageElement.src = post.media[post.currentIndex];
   }
-
   if (indicatorElement) {
-    indicatorElement.textContent = `${post.currentIndex + 1} / ${
-      post.media.length
-    }`; // Fix: Removed extra parentheses
-  } else {
-    console.warn(`❌ Indicator element "indicator-${index}" not found.`);
+    indicatorElement.textContent = `${post.currentIndex + 1} / ${post.media.length}`;
   }
 }
 
-// Function to like a post (only once)
+// ✅ Like post with Qualtrics send
 window.likePost = function (index) {
   let likeBtn = document.getElementById(`like-btn-${index}`);
   if (!posts[index].liked) {
@@ -245,59 +223,14 @@ window.likePost = function (index) {
     likeBtn.src =
       "https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-like1.png";
   }
+
+  // 🚀 Send like count to Qualtrics
+  const qualtricsURL = "https://illinois.qualtrics.com";
+  console.log("❤️ Sending like count to Qualtrics:", posts[index].likes);
+  window.parent.postMessage({ likes: posts[index].likes }, qualtricsURL);
 };
 
-// Function to add a comment
-window.addComment = function (index) {
-  const input = document.getElementById(`comment-input-${index}`);
-  if (input.value.trim()) {
-    posts[index].comments.push(input.value);
-    updateComments(index);
-    input.value = ""; // Clear input
-  }
-};
-
-// Function to update comments
-function updateComments(index) {
-  const commentList = document.getElementById(`comments-${index}`);
-  commentList.innerHTML = ""; // Clear and re-add comments
-
-  posts[index].comments.forEach((comment) => {
-    const newComment = document.createElement("li");
-    newComment.textContent = comment;
-
-    // 🚨 THIS FORCES THE COMMENTS TO BE ON A NEW LINE 🚨
-    newComment.style.display = "block";
-    newComment.style.width = "100%";
-    newComment.style.marginTop = "5px";
-    newComment.style.wordWrap = "break-word";
-    newComment.style.clear = "both"; // 💥 Ensures no floating elements next to it
-
-    commentList.appendChild(newComment);
-  });
-
-  // 🚀 FORCES THE BROWSER TO RERENDER THE COMMENTS 🚀
-  commentList.style.display = "none";
-  setTimeout(() => (commentList.style.display = "block"), 10);
-}
-
-// Load the feed when the page loads
-renderFeed();
-
-// Global variable to store all comments
-let collectedComments = [];
-
-window.addComment = function (index) {
-  const input = document.getElementById(`comment-input-${index}`);
-  if (input.value.trim()) {
-    let comment = input.value.trim();
-    posts[index].comments.push(comment);
-    collectedComments.push(comment); // Store comment in global array
-    updateComments(index);
-    input.value = ""; // Clear input
-  }
-};
-
+// Add comment
 window.addComment = function (index) {
   const input = document.getElementById(`comment-input-${index}`);
   if (input.value.trim()) {
@@ -309,38 +242,72 @@ window.addComment = function (index) {
 
     console.log("✅ addComment() triggered! New comment:", comment);
 
-    // Auto-send comments
     sendCommentsToQualtrics();
   }
 };
 
+// Update comments
+function updateComments(index) {
+  const commentList = document.getElementById(`comments-${index}`);
+  commentList.innerHTML = "";
+
+  posts[index].comments.forEach((comment) => {
+    const newComment = document.createElement("li");
+    newComment.textContent = comment;
+    newComment.style.display = "block";
+    newComment.style.width = "100%";
+    newComment.style.marginTop = "5px";
+    newComment.style.wordWrap = "break-word";
+    newComment.style.clear = "both";
+    commentList.appendChild(newComment);
+  });
+
+  commentList.style.display = "none";
+  setTimeout(() => (commentList.style.display = "block"), 10);
+}
+
+// Send comments to Qualtrics
 window.sendCommentsToQualtrics = function () {
   let commentsString = collectedComments.join(" | ");
   console.log("Trying to send comments:", commentsString);
 
   let qualtricsURL = "https://illinois.qualtrics.com";
-  console.log("Sending message to:", qualtricsURL);
-
   window.parent.postMessage({ comments: commentsString }, qualtricsURL);
 };
 
+// Toggle comment section
 window.toggleComment = function (index) {
   let commentSection = document.getElementById(`comment-section-${index}`);
-  commentSection.classList.toggle("hidden"); // Show/hide comment section
+  commentSection.classList.toggle("hidden");
 };
 
+// ✅ Track Shop Now clicks with timestamps
 window.trackShopNowClick = function (username) {
-  const message = `Shop Now clicked for: ${username}`;
-  console.log("🛒", message);
+  const video = document.querySelector(".video-post");
+  let videoTime = "N/A";
+  if (video) {
+    const seconds = Math.floor(video.currentTime);
+    const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const ss = String(seconds % 60).padStart(2, "0");
+    videoTime = `${mm}:${ss}`;
+  }
 
-  // Send it to Qualtrics
+  const nowISO = new Date().toISOString();
+  const logEntry = `${videoTime} (${nowISO})`;
+  shopNowClicks.push(logEntry);
+
+  console.log("🛒 Learn More clicked:", logEntry);
+
   const qualtricsURL = "https://illinois.qualtrics.com";
-  window.parent.postMessage({ shopNowClick: message }, qualtricsURL);
+  window.parent.postMessage(
+    { shopNowClick: shopNowClicks.join(" | ") },
+    qualtricsURL
+  );
 
-  // Show popup
   showPopup();
 };
 
+// Popup
 function showPopup() {
   const popup = document.getElementById("popup-modal");
   if (popup) popup.classList.remove("hidden");
@@ -351,13 +318,8 @@ function hidePopup() {
   if (popup) popup.classList.add("hidden");
 }
 
-//show and hide popup
-window.showPopup = function () {
-  const popup = document.getElementById("popup-modal");
-  if (popup) popup.classList.remove("hidden");
-};
+window.showPopup = showPopup;
+window.hidePopup = hidePopup;
 
-window.hidePopup = function () {
-  const popup = document.getElementById("popup-modal");
-  if (popup) popup.classList.add("hidden");
-};
+// Load the feed when the page loads
+renderFeed();
