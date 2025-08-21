@@ -59,18 +59,16 @@ function setupVideoAutoplay() {
         video.muted = false;
       });
       userHasInteracted = true;
-      enableEndedListeners();
     }
   });
 
   const videos = document.querySelectorAll(".video-post");
+
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.play().catch((error) =>
-            console.warn("Autoplay prevented:", error)
-          );
+          entry.target.play().catch((error) => console.warn("Autoplay prevented:", error));
         } else {
           entry.target.pause();
         }
@@ -105,7 +103,11 @@ function setupVideoAutoplay() {
       if (playOverlay) playOverlay.classList.remove("hidden");
     });
   });
+
+  // ✅ Attach immediately so first play works
+  enableEndedListeners();
 }
+
 
 // ✅ Notify Qualtrics when video ends
 function enableEndedListeners() {
