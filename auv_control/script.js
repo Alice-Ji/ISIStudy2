@@ -171,7 +171,7 @@ function renderFeed() {
     updateComments(index);
   });
 
-  setupVideoAutoplay();
+  setupVideoPlayer();;
 }
 
 // -----------------------------
