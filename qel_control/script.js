@@ -48,66 +48,41 @@ let shopNowClicks = [];
 loadState();
 
 // -----------------------------
-// Video autoplay
+// Video player (click-to-play only)
 // -----------------------------
-function setupVideoAutoplay() {
-  let userHasInteracted = false;
-
-  document.addEventListener("scroll", () => {
-    if (!userHasInteracted) {
-      document.querySelectorAll(".video-post").forEach((video) => {
-        video.muted = false;
-      });
-      userHasInteracted = true;
-    }
-  });
-
+function setupVideoPlayer() {
   const videos = document.querySelectorAll(".video-post");
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.play().catch((error) => console.warn("Autoplay prevented:", error));
-        } else {
-          entry.target.pause();
-        }
-      });
-    },
-    { threshold: 0.9 }
-  );
-
   videos.forEach((video) => {
-    observer.observe(video);
-
     const playOverlay = video.parentElement.querySelector(".play-overlay");
     if (playOverlay) playOverlay.classList.remove("hidden");
 
+    // ✅ First click → start video with audio
     video.addEventListener("click", () => {
       if (video.paused) {
-        video.play();
+        video.muted = false;
+        video.play().catch(() => {});
         if (playOverlay) playOverlay.classList.add("hidden");
       } else {
-        video.pause();
-        if (playOverlay) playOverlay.classList.remove("hidden");
+        // keep playing (prevents toggle-pause)
+        video.play();
       }
     });
 
-    video.addEventListener("play", () => {
-      setTimeout(() => {
-        if (playOverlay) playOverlay.classList.add("hidden");
-      }, 100);
-    });
+    // ✅ Prevent right-click seeking / context menu
+    video.addEventListener("contextmenu", (e) => e.preventDefault());
 
+    // ✅ Overlay behavior
+    video.addEventListener("play", () => {
+      if (playOverlay) playOverlay.classList.add("hidden");
+    });
     video.addEventListener("pause", () => {
       if (playOverlay) playOverlay.classList.remove("hidden");
     });
   });
 
-  // ✅ Attach immediately so first play works
   enableEndedListeners();
 }
-
 
 // ✅ Notify Qualtrics when video ends
 function enableEndedListeners() {
@@ -144,7 +119,7 @@ function renderFeed() {
     if (post.type === "video") {
       mediaContent = `
         <div class="video-container">
-          <video class="video-post" playsinline>
+          <video class="video-post" playsinline preload="auto">
               <source src="${post.media[0]}" type="video/mp4">
               Your browser does not support the video tag.
           </video>
@@ -178,123 +153,3 @@ function renderFeed() {
       </div>
       <div id="comment-section-${index}" class="comment-section hidden">
         <div class="comment-input-container">
-            <input type="text" id="comment-input-${index}" placeholder="Add a comment...">
-            <img id="send-comment-${index}" 
-                 src="https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-sendcomment.png" 
-                 alt="Send" class="send-icon" onclick="window.addComment(${index})">
-        </div>
-        <ul id="comments-${index}"></ul>
-      </div>
-    `;
-
-    feed.appendChild(postElement);
-    updateComments(index);
-  });
-
-  setupVideoAutoplay();
-}
-
-// -----------------------------
-// Like / Comment / Click tracking
-// -----------------------------
-window.likePost = function (index) {
-  let likeBtn = document.getElementById(`like-btn-${index}`);
-  if (!posts[index].liked) {
-    posts[index].likes++;
-    posts[index].liked = true;
-    likeBtn.src = "https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-like2.png";
-  } else {
-    posts[index].likes--;
-    posts[index].liked = false;
-    likeBtn.src = "https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-like1.png";
-  }
-
-  console.log("❤️ Sending QEL like count:", posts[index].likes);
-  window.parent.postMessage({ qel_like: posts[index].likes }, "https://illinois.qualtrics.com");
-  saveState();
-};
-
-window.addComment = function (index) {
-  const input = document.getElementById(`comment-input-${index}`);
-  if (input.value.trim()) {
-    let comment = input.value.trim();
-    posts[index].comments.push(comment);
-    collectedComments.push(comment);
-    updateComments(index);
-    input.value = "";
-
-    console.log("💬 QEL comment:", comment);
-    sendCommentsToQualtrics();
-    saveState();
-  }
-};
-
-function updateComments(index) {
-  const commentList = document.getElementById(`comments-${index}`);
-  commentList.innerHTML = "";
-  posts[index].comments.forEach((comment) => {
-    const newComment = document.createElement("li");
-    newComment.textContent = comment;
-    newComment.style.display = "block";
-    newComment.style.width = "100%";
-    newComment.style.marginTop = "5px";
-    newComment.style.wordWrap = "break-word";
-    newComment.style.clear = "both";
-    commentList.appendChild(newComment);
-  });
-  commentList.style.display = "none";
-  setTimeout(() => (commentList.style.display = "block"), 10);
-}
-
-window.sendCommentsToQualtrics = function () {
-  let commentsString = collectedComments.join(" | ");
-  console.log("💬 Sending QEL comments:", commentsString);
-  window.parent.postMessage({ qel_comment: commentsString }, "https://illinois.qualtrics.com");
-};
-
-window.toggleComment = function (index) {
-  let commentSection = document.getElementById(`comment-section-${index}`);
-  commentSection.classList.toggle("hidden");
-};
-
-window.trackShopNowClick = function (username) {
-  const video = document.querySelector(".video-post");
-  let videoTime = "N/A";
-  if (video) {
-    const seconds = Math.floor(video.currentTime);
-    const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
-    const ss = String(seconds % 60).padStart(2, "0");
-    videoTime = `${mm}:${ss}`;
-  }
-
-  const nowISO = new Date().toISOString();
-  const logEntry = `${videoTime} (${nowISO})`;
-  shopNowClicks.push(logEntry);
-
-  console.log("🛒 Sending QEL click:", logEntry);
-  window.parent.postMessage({ qel_click: shopNowClicks.join(" | ") }, "https://illinois.qualtrics.com");
-
-  showPopup();
-  saveState();
-};
-
-// -----------------------------
-// Popup
-// -----------------------------
-function showPopup() {
-  const popup = document.getElementById("popup-modal");
-  if (popup) popup.classList.remove("hidden");
-}
-
-function hidePopup() {
-  const popup = document.getElementById("popup-modal");
-  if (popup) popup.classList.add("hidden");
-}
-
-window.showPopup = showPopup;
-window.hidePopup = hidePopup;
-
-// -----------------------------
-// Init
-// -----------------------------
-renderFeed();
