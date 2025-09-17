@@ -154,11 +154,8 @@ function renderFeed() {
   </div>`;
     }
 
-    // ✅ Only show Learn More button for Auvelity
-    if (
-      post.username.includes("Auvelity") && 
-      post.media[0].includes("auvelity")
-    ) {
+    //Learn More button
+    {
       mediaContent += `
           <button class="shop-now-btn" onclick="window.trackShopNowClick('${post.username}')">
           Learn More
