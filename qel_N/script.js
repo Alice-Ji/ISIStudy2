@@ -29,7 +29,7 @@ let posts = [
     type: "video",
     username: "Qelbree® (viloxazine)",
     media: [
-      "https://raw.githubusercontent.com/Alice-Ji/ISIStudy2/main/qel_control.mp4",
+      "https://raw.githubusercontent.com/Alice-Ji/ISIStudy2/main/qel_N.mp4",
     ],
     caption: "Sponsored Content",
     likes: 0,
