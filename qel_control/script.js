@@ -162,7 +162,7 @@ function renderFeed() {
     feed.appendChild(postElement);
     updateComments(index);
   });
-  renderFeed();
 
   setupVideoPlayer();
 }
+renderFeed();
