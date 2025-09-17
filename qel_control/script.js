@@ -27,16 +27,16 @@ function loadState() {
 let posts = [
   {
     type: "video",
-    username: "Auvelity® dextromethorphan HBr and bupropion HCl",
+    username: "Qelbree® (viloxazine)",
     media: [
-      "https://raw.githubusercontent.com/Alice-Ji/ISIStudy2/main/depression-auvelity-man.mp4",
+      "https://raw.githubusercontent.com/Alice-Ji/ISIStudy2/main/qel_control.mp4",
     ],
     caption: "Sponsored Content",
     likes: 0,
     liked: false,
     comments: [],
     profilePic:
-      "https://raw.githubusercontent.com/Alice-Ji/ISIStudy2/main/auvelity_avatar.jpg",
+      "https://raw.githubusercontent.com/Alice-Ji/ISIStudy2/main/qelbree_avatar.jpg",
   },
 ];
 
