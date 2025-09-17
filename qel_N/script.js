@@ -165,3 +165,4 @@ function renderFeed() {
 
   setupVideoPlayer();
 }
+renderFeed();
