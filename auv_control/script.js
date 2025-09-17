@@ -49,65 +49,43 @@ const qualtricsURL = "https://illinois.qualtrics.com";
 loadState();
 
 // -----------------------------
-// Video autoplay
+// Video player
 // -----------------------------
-function setupVideoAutoplay() {
-  let userHasInteracted = false;
-
-  document.addEventListener("scroll", () => {
-    if (!userHasInteracted) {
-      document.querySelectorAll(".video-post").forEach((video) => {
-        video.muted = false;
-      });
-      userHasInteracted = true;
-    }
-  });
-
+function setupVideoPlayer() {
   const videos = document.querySelectorAll(".video-post");
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.play().catch((error) => console.warn("Autoplay prevented:", error));
-        } else {
-          entry.target.pause();
-        }
-      });
-    },
-    { threshold: 0.9 }
-  );
-
   videos.forEach((video) => {
-    observer.observe(video);
-
     const playOverlay = video.parentElement.querySelector(".play-overlay");
     if (playOverlay) playOverlay.classList.remove("hidden");
 
+    // ✅ First click → start video with audio
     video.addEventListener("click", () => {
       if (video.paused) {
-        video.play();
+        video.muted = false;
+        video.play().catch(() => {});
         if (playOverlay) playOverlay.classList.add("hidden");
       } else {
-        video.pause();
-        if (playOverlay) playOverlay.classList.remove("hidden");
+        // optional: disable pause, force play through
+        // comment this out if you want toggle behavior
+        video.play();
       }
     });
 
-    video.addEventListener("play", () => {
-      setTimeout(() => {
-        if (playOverlay) playOverlay.classList.add("hidden");
-      }, 100);
-    });
+    // ✅ Prevent right-click seeking / context menu
+    video.addEventListener("contextmenu", (e) => e.preventDefault());
 
+    // ✅ Hide overlay when playing, show again if somehow paused
+    video.addEventListener("play", () => {
+      if (playOverlay) playOverlay.classList.add("hidden");
+    });
     video.addEventListener("pause", () => {
       if (playOverlay) playOverlay.classList.remove("hidden");
     });
   });
 
-  // ✅ Attach immediately so first play works
-  enableEndedListeners();
+  enableEndedListeners(); // still sends Qualtrics ping
 }
+
 
 // ✅ Notify Qualtrics when video ends
 function enableEndedListeners() {
