@@ -257,18 +257,21 @@ img {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 50px; /* ✅ Force a specific width */
-  height: 50px; /* ✅ Force a specific height */
+  width: 50px;
+  height: 50px;
   opacity: 0.9;
-  pointer-events: none; /* ✅ Ensures taps go to video */
+  pointer-events: auto;   /* ⬅️ let it be clickable */
+  cursor: pointer;        /* ⬅️ give users a hint */
   transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
-  visibility: visible; /* ✅ Ensures smooth hiding */
-  display: block; /* ✅ Make sure it's being rendered */
-  background-image: url("https://github.com/ruochongji/affordancePSIPSR/blob/main/playbutton.png?raw=true"); /* ✅ Use as a background image */
-  background-size: contain; /* ✅ Ensures full visibility */
+  visibility: visible;
+  display: block;
+  background-image: url("https://github.com/ruochongji/affordancePSIPSR/blob/main/playbutton.png?raw=true");
+  background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  z-index: 5;             /* ⬅️ ensure it sits on top */
 }
+
 
 .hidden {
   opacity: 0; /* ✅ Fade out instead of disappearing abruptly */
