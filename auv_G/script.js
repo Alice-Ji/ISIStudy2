@@ -146,7 +146,7 @@ function renderFeed() {
     } else if (post.type === "video") {
       mediaContent = `
       <div class="video-container">
-      <video class="video-post" muted playsinline>
+      <video class="video-post" playsinline>
           <source src="${post.media[0]}" type="video/mp4">
           Your browser does not support the video tag.
       </video>
