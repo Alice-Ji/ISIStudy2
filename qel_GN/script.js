@@ -43,12 +43,13 @@ let posts = [
 // Global arrays
 let collectedComments = [];
 let shopNowClicks = [];
+const qualtricsURL = "https://illinois.qualtrics.com";
 
-// Load any saved state
+// Load saved state if it exists
 loadState();
 
 // -----------------------------
-// Video player (click-to-play only)
+// Video player (click-to-play)
 // -----------------------------
 function setupVideoPlayer() {
   const videos = document.querySelectorAll(".video-post");
@@ -57,22 +58,18 @@ function setupVideoPlayer() {
     const playOverlay = video.parentElement.querySelector(".play-overlay");
     if (playOverlay) playOverlay.classList.remove("hidden");
 
-    // ✅ First click → start video with audio
     video.addEventListener("click", () => {
       if (video.paused) {
         video.muted = false;
         video.play().catch(() => {});
         if (playOverlay) playOverlay.classList.add("hidden");
       } else {
-        // keep playing (prevents toggle-pause)
-        video.play();
+        video.play(); // force play through (no toggle pause)
       }
     });
 
-    // ✅ Prevent right-click seeking / context menu
     video.addEventListener("contextmenu", (e) => e.preventDefault());
 
-    // ✅ Overlay behavior
     video.addEventListener("play", () => {
       if (playOverlay) playOverlay.classList.add("hidden");
     });
@@ -90,7 +87,7 @@ function enableEndedListeners() {
   videos.forEach((video) => {
     video.addEventListener("ended", () => {
       console.log("🎬 Video ended, notifying Qualtrics...");
-      window.parent.postMessage({ qel_videoEnded: true }, "https://illinois.qualtrics.com");
+      window.parent.postMessage({ qel_videoEnded: true }, qualtricsURL);
     });
   });
 }
@@ -153,3 +150,18 @@ function renderFeed() {
       </div>
       <div id="comment-section-${index}" class="comment-section hidden">
         <div class="comment-input-container">
+            <input type="text" id="comment-input-${index}" placeholder="Add a comment...">
+            <img id="send-comment-${index}" 
+                 src="https://raw.githubusercontent.com/ruochongji/affordancePSIPSR/main/ins-sendcomment.png" 
+                 alt="Send" class="send-icon" onclick="window.addComment(${index})">
+        </div>
+        <ul id="comments-${index}"></ul>
+      </div>
+    `;
+
+    feed.appendChild(postElement);
+    updateComments(index);
+  });
+
+  setupVideoPlayer();
+}
