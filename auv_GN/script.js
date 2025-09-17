@@ -4,7 +4,7 @@ console.log("🚀 AUV script.js has loaded successfully!");
 // State persistence
 // -----------------------------
 function saveState() {
-  localStorage.setItem("auv_state", JSON.stringify({
+  localStorage.setItem("auv_GN_state", JSON.stringify({
     posts,
     collectedComments,
     shopNowClicks
@@ -12,7 +12,7 @@ function saveState() {
 }
 
 function loadState() {
-  const saved = localStorage.getItem("auv_state");
+  const saved = localStorage.getItem("auv_GN_state");
   if (saved) {
     const state = JSON.parse(saved);
     if (state.posts) posts = state.posts;
@@ -58,23 +58,20 @@ function setupVideoPlayer() {
     const playOverlay = video.parentElement.querySelector(".play-overlay");
     if (playOverlay) playOverlay.classList.remove("hidden");
 
-    // ✅ First click → start video with audio
-    video.addEventListener("click", () => {
-      if (video.paused) {
+    // ✅ Overlay click starts the video
+    if (playOverlay) {
+      playOverlay.addEventListener("click", () => {
         video.muted = false;
-        video.play().catch(() => {});
-        if (playOverlay) playOverlay.classList.add("hidden");
-      } else {
-        // optional: disable pause, force play through
-        // comment this out if you want toggle behavior
-        video.play();
-      }
-    });
+        video.play().then(() => {
+          playOverlay.classList.add("hidden");
+        }).catch(err => console.warn("Playback failed:", err));
+      });
+    }
 
     // ✅ Prevent right-click seeking / context menu
     video.addEventListener("contextmenu", (e) => e.preventDefault());
 
-    // ✅ Hide overlay when playing, show again if somehow paused
+    // ✅ Keep overlay hidden when video plays, show if it pauses
     video.addEventListener("play", () => {
       if (playOverlay) playOverlay.classList.add("hidden");
     });
@@ -83,7 +80,7 @@ function setupVideoPlayer() {
     });
   });
 
-  enableEndedListeners(); // still sends Qualtrics ping
+  enableEndedListeners(); // sends Qualtrics video end ping
 }
 
 
@@ -93,7 +90,7 @@ function enableEndedListeners() {
   videos.forEach((video) => {
     video.addEventListener("ended", () => {
       console.log("🎬 Video ended, notifying Qualtrics...");
-      window.parent.postMessage({ auv_videoEnded: true }, "https://illinois.qualtrics.com");
+      window.parent.postMessage({ qel_videoEnded: true }, "https://illinois.qualtrics.com");
     });
   });
 }
