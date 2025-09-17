@@ -29,7 +29,7 @@ let posts = [
     type: "video",
     username: "Auvelity® dextromethorphan HBr and bupropion HCl",
     media: [
-      "https://raw.githubusercontent.com/Alice-Ji/ISIStudy2/main/auv_control.mp4",
+      "https://raw.githubusercontent.com/Alice-Ji/ISIStudy2/main/auv_GN.mp4",
     ],
     caption: "Sponsored Content",
     likes: 0,
