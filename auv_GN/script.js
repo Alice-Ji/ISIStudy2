@@ -90,7 +90,7 @@ function enableEndedListeners() {
   videos.forEach((video) => {
     video.addEventListener("ended", () => {
       console.log("🎬 Video ended, notifying Qualtrics...");
-      window.parent.postMessage({ qel_videoEnded: true }, "https://illinois.qualtrics.com");
+      window.parent.postMessage({ auv_videoEnded: true }, "https://illinois.qualtrics.com");
     });
   });
 }
